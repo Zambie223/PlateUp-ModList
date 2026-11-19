@@ -1,0 +1,13 @@
+# All text files use LF, in the repo and on disk (Windows tools handle LF fine).
+# This only affects line endings, never file content.
+* text=auto eol=lf
+
+# Visual Studio solution files are conventionally CRLF.
+*.sln text eol=crlf
+
+# Never touch binaries (they're git-ignored anyway, but be explicit).
+*.dll binary
+*.pdb binary
+*.exe binary
+*.png binary
+*.jpg binary

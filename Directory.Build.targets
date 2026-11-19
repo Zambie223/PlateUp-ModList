@@ -1,0 +1,43 @@
+<Project>
+  <!--
+    Shared targets for the mod project(s) in this repository.
+    Imported automatically by MSBuild after each .csproj, so project properties are visible here.
+
+    Per-project knobs (set in the .csproj):
+      ModFolderName  folder name under <game>\Mods\ (default: AssemblyName)
+      DeployMod      copy to <game>\Mods\ after build (default: true)
+      UseHarmony     reference the Workshop Harmony DLL (default: true, see Directory.Build.props)
+    Extra files to ship (asset bundles, etc.):
+      <ItemGroup><ModContent Include="assets\mybundle" /></ItemGroup>
+  -->
+  <PropertyGroup>
+    <ModFolderName Condition="'$(ModFolderName)' == ''">$(AssemblyName)</ModFolderName>
+    <DeployMod Condition="'$(DeployMod)' == ''">true</DeployMod>
+    <ModDeployDir>$(PlateUpModsDir)$(ModFolderName)\</ModDeployDir>
+  </PropertyGroup>
+
+  <Target Name="ValidatePlateUpPaths" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(PlateUpManagedDir)')"
+           Text="PlateUp not found at '$(PlateUpGameDir)'. Set PlateUpGameDir in Directory.Build.local.props (repository root) or the PLATEUP_GAME_DIR environment variable to the folder that contains PlateUp.exe." />
+    <Error Condition="'$(UseHarmony)' == 'true' and !Exists('$(HarmonyDll)')"
+           Text="Harmony not found at '$(HarmonyDll)'. Subscribe to the PlateUp 'Harmony' Workshop item (id $(HarmonyWorkshopId)) and launch the game once, or set UseHarmony=false in the project." />
+  </Target>
+
+  <Target Name="DeployToPlateUp" AfterTargets="Build" Condition="'$(DeployMod)' == 'true'">
+    <ItemGroup>
+      <_ModDeployFile Include="$(TargetPath)" />
+      <_ModDeployFile Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    </ItemGroup>
+    <MakeDir Directories="$(ModDeployDir)" />
+    <Copy SourceFiles="@(_ModDeployFile)" DestinationFolder="$(ModDeployDir)" SkipUnchangedFiles="true" />
+    <!-- %(RecursiveDir) keeps subfolders, e.g. content\ for asset bundles. -->
+    <Copy SourceFiles="@(ModContent)" DestinationFiles="@(ModContent->'$(ModDeployDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="$(MSBuildProjectName) -> deployed to $(ModDeployDir)" />
+  </Target>
+
+  <!-- Remove this mod from the game's local Mods folder: dotnet msbuild -t:UndeployFromPlateUp -->
+  <Target Name="UndeployFromPlateUp">
+    <RemoveDir Directories="$(ModDeployDir)" Condition="Exists('$(ModDeployDir)')" />
+    <Message Importance="high" Text="Removed $(ModDeployDir)" />
+  </Target>
+</Project>

@@ -1,0 +1,83 @@
+<Project>
+  <!--
+    Shared build settings for the mod project(s) in this repository.
+    Imported automatically by MSBuild before each .csproj.
+
+    Machine-specific paths: create Directory.Build.local.props next to this file (git-ignored), e.g.
+      <Project><PropertyGroup>
+        <PlateUpGameDir>D:\SteamLibrary\steamapps\common\PlateUp\PlateUp</PlateUpGameDir>
+      </PropertyGroup></Project>
+    or set the PLATEUP_GAME_DIR environment variable.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+  <PropertyGroup>
+    <!-- PlateUp runs on Unity 2020.3 / Mono; existing Workshop mods target netstandard2.0. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- C# 9 compiles fine for Mono. Avoid features that need newer runtime support
+         (default interface methods, init-only setters without a polyfill, etc.). -->
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+
+    <!-- The game loads <Mod>.pdb next to <Mod>.dll for line numbers in stack traces. -->
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <!-- Record source paths relative to the repo (/_/...) instead of the builder's own folders,
+         so released DLL/PDB files contain no machine-specific paths. -->
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=/_/</PathMap>
+
+    <!-- The mod folder should contain only our own DLL(s); nothing from the game. -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <!-- Game assemblies are compiled against .NET Framework 4.x; netstandard2.0 projects
+         referencing them produce this noise, which is expected and harmless here. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+
+    <!-- ===== Paths ===== -->
+    <PlateUpGameDir Condition="'$(PlateUpGameDir)' == '' and '$(PLATEUP_GAME_DIR)' != ''">$(PLATEUP_GAME_DIR)</PlateUpGameDir>
+    <PlateUpGameDir Condition="'$(PlateUpGameDir)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\PlateUp\PlateUp</PlateUpGameDir>
+    <PlateUpGameDir>$([MSBuild]::EnsureTrailingSlash('$(PlateUpGameDir)'))</PlateUpGameDir>
+
+    <PlateUpManagedDir>$(PlateUpGameDir)PlateUp_Data\Managed\</PlateUpManagedDir>
+    <PlateUpModsDir>$(PlateUpGameDir)Mods\</PlateUpModsDir>
+    <!-- <library>\steamapps\common\PlateUp\PlateUp\ -> <library>\steamapps\workshop\content\1599600\ -->
+    <PlateUpWorkshopDir Condition="'$(PlateUpWorkshopDir)' == ''">$([System.IO.Path]::GetFullPath('$(PlateUpGameDir)..\..\..\workshop\content\1599600\'))</PlateUpWorkshopDir>
+
+    <!-- Harmony is provided at runtime by the "Harmony" Workshop item. We compile against
+         that exact DLL and never ship our own copy (two copies would both be loaded). -->
+    <UseHarmony Condition="'$(UseHarmony)' == ''">true</UseHarmony>
+    <HarmonyWorkshopId Condition="'$(HarmonyWorkshopId)' == ''">2898033283</HarmonyWorkshopId>
+    <HarmonyDll>$(PlateUpWorkshopDir)$(HarmonyWorkshopId)\0Harmony.dll</HarmonyDll>
+  </PropertyGroup>
+
+  <!--
+    Reference every game assembly (Kitchen*, Unity*, Sirenix*, etc.) without copying it.
+    BCL/runtime facades are excluded because netstandard2.0 already supplies those.
+  -->
+  <ItemGroup Condition="Exists('$(PlateUpManagedDir)')">
+    <_PlateUpGameDll Include="$(PlateUpManagedDir)*.dll"
+                     Exclude="$(PlateUpManagedDir)mscorlib.dll;
+                              $(PlateUpManagedDir)netstandard.dll;
+                              $(PlateUpManagedDir)System.dll;
+                              $(PlateUpManagedDir)System.*.dll;
+                              $(PlateUpManagedDir)Mono.*.dll;
+                              $(PlateUpManagedDir)Microsoft.*.dll" />
+    <Reference Include="@(_PlateUpGameDll)" Private="false" />
+    <!-- Span/Memory support libraries aren't part of netstandard2.0, but game APIs expose their
+         types (e.g. MessagePackReader/Writer). Compile against the game's own copies. -->
+    <Reference Include="$(PlateUpManagedDir)System.Memory.dll;$(PlateUpManagedDir)System.Buffers.dll;$(PlateUpManagedDir)System.Runtime.CompilerServices.Unsafe.dll"
+               Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseHarmony)' == 'true' and Exists('$(HarmonyDll)')">
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyDll)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+{
+  "sdk": {
+    "version": "8.0.100",
+    "rollForward": "latestMajor",
+    "paths": [ ".dotnet", "$host$" ],
+    "errorMessage": "No compatible .NET SDK found. Install the .NET 8 SDK or newer."
+  }
+}

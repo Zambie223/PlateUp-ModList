@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+*.user
+
+# Machine-specific build settings (game path etc.)
+Directory.Build.local.props
+
+# Repo-local .NET SDK, if you install one here (see global.json)
+.dotnet/
+
+# Decompiled game code is copyrighted. Never commit it.
+_decompiled/
+
+# Packaged builds
+_dist/
+
+# Editors / OS
+.vs/
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini

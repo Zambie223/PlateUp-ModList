@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Most settings live in ..\Directory.Build.props / .targets. -->
+  <PropertyGroup>
+    <AssemblyName>ModList</AssemblyName>
+    <RootNamespace>ModList</RootNamespace>
+    <!-- Keep in sync with ModMain.Version. Mod List reads this back for its own row. -->
+    <Version>0.1.0</Version>
+    <!-- Folder name under <game>\Mods\ -->
+    <ModFolderName>ModList</ModFolderName>
+  </PropertyGroup>
+</Project>

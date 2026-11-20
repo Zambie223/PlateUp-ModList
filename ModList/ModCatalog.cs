@@ -19,6 +19,8 @@ namespace ModList
         public bool Workshop;
         public ulong WorkshopId;
         public bool Failed;
+        /// <summary>The mod's ModListOptions class, or null if it has none.</summary>
+        public OptionsProvider Options;
     }
 
     /// <summary>
@@ -75,16 +77,20 @@ namespace ModList
                     list.Add(new ModEntry { Name = mod.Name ?? "?", Workshop = mod.ID != 0, WorkshopId = mod.ID });
                 }
             }
-            // Alphabetical; ties (e.g. a local copy and the Workshop copy of the same mod) keep
-            // load order, Workshop first, because the sort is stable.
-            list = list.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            // Alphabetical by default; ties (e.g. a local copy and the Workshop copy of the same
+            // mod) keep load order, Workshop first, because the sort is stable.
+            if (!ModListSettings.SortByLoadOrder)
+            {
+                list = list.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            }
 
             if (!_loggedOnce)
             {
                 _loggedOnce = true;
                 ModMain.Log($"{list.Count} mod(s): " + string.Join(", ", list.Select(e =>
                     $"{e.Name} [{(e.Workshop ? "Workshop " + e.WorkshopId : "local")}] "
-                    + (e.Failed ? "FAILED" : e.Version ?? "no version"))));
+                    + (e.Failed ? "FAILED" : e.Version ?? "no version")
+                    + (e.Options != null ? " +options" : ""))));
             }
             return list;
         }
@@ -118,6 +124,12 @@ namespace ModList
                         declaredName ??= ReadString(init, "ModName");
                     }
                 }
+            }
+
+            // Failed mods are skipped: their code may be half-initialised.
+            if (!entry.Failed)
+            {
+                entry.Options = OptionsProvider.Find(packs.OrderBy(p => p == main ? 0 : 1).Select(p => p.Asm));
             }
 
             entry.Version = declaredVersion != null ? Clean(declaredVersion)

@@ -97,7 +97,9 @@ namespace ModList
                     ModMain.LogWarning("PlayerPauseView internals not found; the Mods menu can't be registered");
                     return;
                 }
-                menus[typeof(ModListMenu)] = new ModListMenu(__instance.ButtonContainer, moduleList);
+                ModOptionsMenu options = new ModOptionsMenu(__instance.ButtonContainer, moduleList);
+                menus[typeof(ModOptionsMenu)] = options;
+                menus[typeof(ModListMenu)] = new ModListMenu(__instance.ButtonContainer, moduleList, options);
             }
             catch (Exception e)
             {

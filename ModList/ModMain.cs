@@ -14,13 +14,17 @@ namespace ModList
     ///   ModListMenu     the panel, built like vanilla's Recipes panel (left / right to page).
     ///   ModCatalog      reads the game's own loaded-mod list (KitchenMods.ModPreload.Mods) and
     ///                   works out a display name and version for each mod.
+    ///   ModOptions      the mod-options contract: finds each mod's static ModListOptions class
+    ///                   and parses what it returns (docs/MOD_OPTIONS.md).
+    ///   GearElement     the settings gear on each row whose mod has options.
+    ///   ModOptionsMenu  one mod's options page.
     /// Purely local UI: nothing is synced, so it's fine for only some players to have it.
     /// </summary>
     public class ModMain : IModInitializer
     {
         public const string Id = "zambie.modlist";
         public const string Name = "Mod List";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
 
         private static Harmony _harmony;
 

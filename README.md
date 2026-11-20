@@ -19,6 +19,14 @@ A [PlateUp!](https://store.steampowered.com/app/1599600/PlateUp/) mod that adds 
 
 If the list doesn't fit on one page, page through with the left and right menu controls, the same as the Recipes panel. Back or Escape returns to the pause menu.
 
+## Mod options
+
+Mods can add their own settings to the Mods screen. Each mod that does gets a settings gear at the end of its row in the list, which opens a settings page like the game's own; mods without settings have no gear. Select a gear with the mouse, or move between them with up / down (left / right still turns the page). Changes apply as soon as you make them. Hold left / right to change a number quickly; mods can also give numbers a slider and let you type a value.
+
+Mod List has a couple of options itself: the sort order (name or load order), and whether to show the Workshop tag.
+
+**For mod authors:** see [docs/MOD_OPTIONS.md](docs/MOD_OPTIONS.md). It's one static class in your mod. Your mod doesn't depend on Mod List and works the same without it.
+
 ## Install
 
 1. Subscribe to the **Harmony** Workshop item (id `2898033283`), which this mod needs (most code mods already do).

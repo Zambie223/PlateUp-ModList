@@ -4,7 +4,10 @@
     <AssemblyName>ModList</AssemblyName>
     <RootNamespace>ModList</RootNamespace>
     <!-- Keep in sync with ModMain.Version. Mod List reads this back for its own row. -->
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
+    <!-- Keep the informational version plain ("0.2.0"); the SDK would otherwise append the
+         commit hash checked out at build time, which is the previous commit for a release build. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <!-- Folder name under <game>\Mods\ -->
     <ModFolderName>ModList</ModFolderName>
   </PropertyGroup>
